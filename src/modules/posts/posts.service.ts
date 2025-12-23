@@ -11,10 +11,10 @@ export class PostsService {
   constructor(@InjectModel(Posts.name) private  postModel: Model<Posts>){}
   async create(payload: CreatePostDto) {
     const newPost = new this.postModel(payload)
-    const post = await newPost.save()
+    await newPost.save()
     return {
       success: true,
-      data: post
+      data: newPost
     }
   }
 

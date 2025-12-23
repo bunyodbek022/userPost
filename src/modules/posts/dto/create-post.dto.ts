@@ -1,14 +1,28 @@
-import { IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsMongoId } from 'class-validator';
 
 export class CreatePostDto {
-    @IsString()
-    @IsNotEmpty({ message: "Sarlavha bo'sh bo'lishi mumkin emas" })
-    title: string
+  @ApiProperty({ 
+    example: 'Amir Temur', 
+    description: 'Post sarlavhasi' 
+  })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
 
-    @IsString()
-    context: string;
+  @ApiProperty({ 
+    example: "U ulug' sarkarda bolgan", 
+    description: 'Post mazmuni' 
+  })
+  @IsString()
+  @IsNotEmpty()
+  content: string;
 
-    @IsMongoId({ message: 'Author maydoni haqiqiy MongoDB ID bolishi kerak' })
-    @IsNotEmpty()
-    author: string
+  @ApiProperty({ 
+    example: '6584f23e4d9b2a1234567890', 
+    description: 'Foydalanuvchining ID raqami' 
+  })
+  @IsMongoId({ message: "Yaroqsiz author ID" })
+  @IsNotEmpty()
+  author: string;
 }
