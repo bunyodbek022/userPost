@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Users } from 'src/modules/users/schema/users.schema';
+
 
 @Schema()
 export class Posts extends Document {
@@ -8,14 +8,14 @@ export class Posts extends Document {
   title: string;
 
   @Prop({ required: true })
-  context: string;
+  content: string;
 
   @Prop({
     type: Types.ObjectId,
     ref: 'Users',
     required: true,
   })
-  author: Users;
+  author: Types.ObjectId;;
 }
 
 export const PostsSchema = SchemaFactory.createForClass(Posts);

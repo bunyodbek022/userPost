@@ -17,12 +17,4 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty({ 
-    example: '6584f23e4d9b2a1234567890', 
-    description: 'Foydalanuvchining ID raqami' 
-  })
-  @IsMongoId({ message: "Yaroqsiz author ID" })
-  @IsNotEmpty()
-  author: string;
 }
