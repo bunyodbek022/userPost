@@ -12,7 +12,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: true, 
+    origin: 'https://bunyodbek.me', 
     credentials: true,               
   });
 
