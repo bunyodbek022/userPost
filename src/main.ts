@@ -2,11 +2,28 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import  cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
 
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: true, 
+    credentials: true,               
+  });
+
+  // 3. Global Pipelar
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: false,
+    }),
+  );
+
+  // 4. Swagger sozlamalari
   const config = new DocumentBuilder()
     .setTitle('NestJS MongoDB Project')
     .setDescription('User va Post CRUD operatsiyalari uchun API dokumentatsiya')
@@ -25,11 +42,9 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.use(cookieParser());
-  app.enableCors({
-  origin: 'http://localhost:3001', 
-  credentials: true,               
-});
-  await app.listen(process.env.PORT ?? 3000);
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
