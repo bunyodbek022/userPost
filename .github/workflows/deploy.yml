@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           script: |
-            cd /root/devstories-backend
+            cd root/var/www/devStories/backend
             
             echo "Pulling latest backend code..."
             git fetch origin main
