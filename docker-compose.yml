@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: devstories_db
+    restart: always
+    ports:
+      - "${DB_PORT:-27017}:27017"
+    volumes:
+      - devstories_mongo_data:/data/db
+
+  backend:
+    build: 
+      context: .
+    container_name: devstories_api
+    restart: always
+    depends_on:
+      - mongodb
+    ports:
+      - "3000:3000" 
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/devstories
+      - PORT=3000
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    container_name: devstories_web
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3001:3000" 
+    env_file:
+      - .env
+
+volumes:
+  devstories_mongo_data:

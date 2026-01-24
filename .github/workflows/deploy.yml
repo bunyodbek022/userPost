@@ -1,0 +1,35 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /root/devstories-backend
+            
+            echo "Pulling latest backend code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "Rebuilding and restarting Docker containers..."
+            # Faqat backendni qayta build qilish va restart qilish
+            docker compose build backend
+            docker compose up -d backend
+            
+            # Tozalash (eski keraksiz image'larni o'chirish)
+            docker image prune -f
