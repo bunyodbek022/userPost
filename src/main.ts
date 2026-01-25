@@ -12,8 +12,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: 'https://bunyodbek.me', 
-    credentials: true,               
+    origin: [
+      'https://bunyodbek.me',
+      'http://localhost:3001',
+      'http://localhost:3000',
+    ],
+    credentials: true,
   });
 
   // 3. Global Pipelar

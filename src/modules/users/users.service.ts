@@ -67,7 +67,7 @@ export class UsersService {
 
   async login(payload: LoginUserDto, res: Response) {
     try {
-      const user = await this.userModel.findOne({ email: payload.email });
+      const user = await this.userModel.findOne({ userName: payload.userName });
       if (!user) {
         throw new NotFoundException('User topilmadi. Iltimos register qiling');
       }
