@@ -38,7 +38,7 @@ async toggleLike(postId: string, userId: string) {
   }
 
   const savedPost = await post.save();
-  return await savedPost.populate('author categories');
+  return this.postModel.findById(postId).populate('author categories').exec();
 }
 
   async findAll(page = 1, limit = 10, search?: string) {
