@@ -40,14 +40,14 @@ export class PostsController {
   }
 
   @ApiSecurity('cookie-auth-key')
-@Patch(':id/like')
-@ApiOperation({ summary: 'Postga like bosish yoki qaytarib olish' })
-@UseGuards(AuthGuard)
-async toggleLike(@Param('id') id: string, @Req() req) {
-  const userId = req.user.id || req.user._id;
-  return this.postsService.toggleLike(id, userId);
+  @Post(':id/like')
+  @ApiOperation({ summary: 'Postga like bosish yoki qaytarib olish' })
+  @UseGuards(AuthGuard)
+  async toggleLike(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id || req.user._id;
+    return this.postsService.toggleLike(id, userId);
   }
-  
+
   @Get()
   @ApiOperation({ summary: 'Barcha postlarni korish (avtorlari bilan)' })
   @ApiQuery({ name: 'search', required: false, type: String })
