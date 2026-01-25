@@ -25,54 +25,66 @@ export class PostsService {
     };
   }
 
+  async toggleLike(postId: string, userId: string) {
+    const post = await this.postModel.findById(postId);
+    if (!post) throw new NotFoundException('Post topilmadi');
 
-async toggleLike(postId: string, userId: string) { 
-  const post = await this.postModel.findById(postId);
-  if (!post) throw new NotFoundException('Post topilmadi');
-  const index = post.likes.findIndex(id => id.toString() === String(userId));
+    const index = post.likes.findIndex(
+      (id) => id.toString() === String(userId),
+    );
 
-  if (index === -1) {
-    post.likes.push(userId as any);
-  } else {
-    post.likes.splice(index, 1);
+    if (index === -1) {
+      post.likes.push(userId as any);
+    } else {
+      post.likes.splice(index, 1);
+    }
+
+    await post.save();
+
+    const updatedPost = await this.postModel
+      .findById(postId)
+      .populate('author', 'userName role')
+      .populate('categories')
+      .exec();
+
+    return {
+      success: true,
+      data: updatedPost,
+    };
   }
-
-  const savedPost = await post.save();
-  return this.postModel.findById(postId).populate('author categories').exec();
-}
 
   async findAll(page = 1, limit = 10, search?: string) {
-  const filter: any = {};
-  if (search) {
-    filter.title = { $regex: search, $options: 'i' };
+    const filter: any = {};
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.postModel
+        .find(filter)
+        .populate('author', 'userName role')
+        .populate('categories')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+
+      this.postModel.countDocuments(filter),
+    ]);
+
+    return {
+      success: true,
+      data: items,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
-
-  const skip = (page - 1) * limit;
-
-  const [items, total] = await Promise.all([
-    this.postModel
-      .find(filter) 
-      .populate('author', 'userName role') 
-      .populate('categories') 
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .exec(),
-
-    this.postModel.countDocuments(filter), 
-  ]);
-
-  return {
-    success: true,
-    data: items,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-}
 
   async findMyPosts(page = 1, limit = 10, user: { id: string }) {
     const skip = (page - 1) * limit;
@@ -103,19 +115,19 @@ async toggleLike(postId: string, userId: string) {
   }
 
   async findOne(id: string) {
-  const post = await this.postModel
-    .findById(id)
-    .populate('author', 'userName role')
-    .populate('categories')
-    .exec();
-    
-  if (!post) throw new NotFoundException('Post topilmadi');
-  
-  return {
-    success: true,
-    data: post,
-  };
-}
+    const post = await this.postModel
+      .findById(id)
+      .populate('author', 'userName role')
+      .populate('categories')
+      .exec();
+
+    if (!post) throw new NotFoundException('Post topilmadi');
+
+    return {
+      success: true,
+      data: post,
+    };
+  }
 
   async updatePost(postId: string, dto: UpdatePostDto, user: AuthUser) {
     const post = await this.postModel.findById(postId);
