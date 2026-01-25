@@ -47,9 +47,8 @@ export class UsersController {
   @Post('login')
   @ApiOperation({ summary: 'User login qilish' })
   login(@Body() payload: LoginUserDto, @Res() res: Response) {
-    return this.usersService.login(payload, res)
+    return this.usersService.login(payload, res);
   }
-
 
   @UseGuards(AuthGuard, RolesGuard)
   @Get('profile')
@@ -57,14 +56,15 @@ export class UsersController {
   @ApiOperation({ summary: 'User profilini korish' })
   profile(@Req() req) {
     const user: AuthUser = req.user;
-    return this.usersService.findOne(String(user.id))
+    return this.usersService.findOne(String(user.id));
   }
 
-    
   @UseGuards(AuthGuard, RolesGuard)
   @Get()
   @ApiSecurity('cookie-auth-key')
   @ApiOperation({ summary: 'Barcha userlarni korish' })
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
   findAll() {
     return this.usersService.findAll();
   }
@@ -91,8 +91,8 @@ export class UsersController {
   @ApiSecurity('cookie-auth-key')
   @ApiOperation({ summary: 'Userni  ochirish' })
   remove(@Param('id') id: string, @Req() req) {
-   const user: AuthUser = req.user as AuthUser;
-  return this.usersService.removeUser(id, user);
+    const user: AuthUser = req.user as AuthUser;
+    return this.usersService.removeUser(id, user);
   }
 
   @UseGuards(AuthGuard)
