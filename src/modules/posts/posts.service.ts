@@ -103,16 +103,19 @@ async toggleLike(postId: string, userId: string) {
   }
 
   async findOne(id: string) {
-    const post = await this.postModel
-      .findById(id)
-      .populate('author', 'userName')
-      .exec();
-    if (!post) throw new NotFoundException('Post topilmadi');
-    return {
-      success: true,
-      data: post,
-    };
-  }
+  const post = await this.postModel
+    .findById(id)
+    .populate('author', 'userName role')
+    .populate('categories')
+    .exec();
+    
+  if (!post) throw new NotFoundException('Post topilmadi');
+  
+  return {
+    success: true,
+    data: post,
+  };
+}
 
   async updatePost(postId: string, dto: UpdatePostDto, user: AuthUser) {
     const post = await this.postModel.findById(postId);
