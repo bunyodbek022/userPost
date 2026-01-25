@@ -42,40 +42,37 @@ async toggleLike(postId: string, userId: string) {
 }
 
   async findAll(page = 1, limit = 10, search?: string) {
-    const filter: any = {};
-
-    if (search) {
-      filter.title = {
-        $regex: search,
-        $options: 'i',
-      };
-    }
-
-    const skip = (page - 1) * limit;
-
-    const [items, total] = await Promise.all([
-      this.postModel
-        .find(filter, { title: 1, createdAt: 1 })
-        .populate('author', 'userName')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-
-      this.postModel.countDocuments(),
-    ]);
-
-    return {
-      success: true,
-      data: items,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+  const filter: any = {};
+  if (search) {
+    filter.title = { $regex: search, $options: 'i' };
   }
+
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    this.postModel
+      .find(filter) 
+      .populate('author', 'userName role') 
+      .populate('categories') 
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec(),
+
+    this.postModel.countDocuments(filter), 
+  ]);
+
+  return {
+    success: true,
+    data: items,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 
   async findMyPosts(page = 1, limit = 10, user: { id: string }) {
     const skip = (page - 1) * limit;
