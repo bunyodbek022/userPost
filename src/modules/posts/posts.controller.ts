@@ -49,16 +49,19 @@ export class PostsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Barcha postlarni korish (avtorlari bilan)' })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'category', required: false, type: String })
   findAll(
     @Query('page') page = '1',
     @Query('limit') limit = '10',
     @Query('search') search?: string,
+    @Query('category') category?: string,
   ) {
-    return this.postsService.findAll(Number(page), Number(limit), search);
+    return this.postsService.findAll(
+      Number(page),
+      Number(limit),
+      search,
+      category,
+    );
   }
 
   @ApiSecurity('cookie-auth-key')
