@@ -39,6 +39,15 @@ export class PostsController {
     return this.postsService.create(dto, user);
   }
 
+  @ApiSecurity('cookie-auth-key')
+@Patch(':id/like')
+@ApiOperation({ summary: 'Postga like bosish yoki qaytarib olish' })
+@UseGuards(AuthGuard)
+async toggleLike(@Param('id') id: string, @Req() req: any) {
+  const userId = req.user._id;
+  return this.postsService.toggleLike(id, userId);
+  }
+  
   @Get()
   @ApiOperation({ summary: 'Barcha postlarni korish (avtorlari bilan)' })
   @ApiQuery({ name: 'search', required: false, type: String })

@@ -63,8 +63,8 @@ export class UsersController {
   @Get()
   @ApiSecurity('cookie-auth-key')
   @ApiOperation({ summary: 'Barcha userlarni korish' })
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
   findAll() {
     return this.usersService.findAll();
   }

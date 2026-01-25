@@ -4,6 +4,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
+import { CategoryModule } from './modules/category/category.module';
 
 
 @Module({
@@ -22,7 +23,8 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
     
   }),
   inject: [ConfigService],
-})
+}),
+    CategoryModule
 ],
   controllers: [],
   providers: [],
