@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
@@ -26,8 +35,16 @@ export class CategoryController {
     return this.categoryService.findAll();
   }
 
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateCategoryDto: { name: string },
+  ) {
+    return this.categoryService.update(id, updateCategoryDto);
+  }
+
   @Delete(':id')
-  @ApiOperation({ summary: 'Kategoriyani o\'chirish (Faqat Admin)' })
+  @ApiOperation({ summary: "Kategoriyani o'chirish (Faqat Admin)" })
   @Roles('admin')
   @UseGuards(AuthGuard, RolesGuard)
   remove(@Param('id') id: string) {
