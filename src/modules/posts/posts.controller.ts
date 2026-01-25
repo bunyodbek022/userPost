@@ -43,8 +43,8 @@ export class PostsController {
 @Patch(':id/like')
 @ApiOperation({ summary: 'Postga like bosish yoki qaytarib olish' })
 @UseGuards(AuthGuard)
-async toggleLike(@Param('id') id: string, @Req() req: any) {
-  const userId = req.user._id;
+async toggleLike(@Param('id') id: string, @Req() req) {
+  const userId = req.user.id;
   return this.postsService.toggleLike(id, userId);
   }
   

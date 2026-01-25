@@ -21,15 +21,15 @@ export class CategoryController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Barcha kategoriyalarni ko‘rish (Hamma uchun)' })
+  @ApiOperation({ summary: 'Barcha kategoriyalarni korish (Hamma uchun)' })
   findAll() {
     return this.categoryService.findAll();
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Kategoriyani o‘chirish (Faqat Admin)' })
-  @UseGuards(AuthGuard, RolesGuard)
+  @ApiOperation({ summary: 'Kategoriyani o\'chirish (Faqat Admin)' })
   @Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
   remove(@Param('id') id: string) {
     return this.categoryService.remove(id);
   }

@@ -25,18 +25,21 @@ export class PostsService {
     };
   }
 
-  async toggleLike(postId: string, userId: string) {
-    const post = await this.postModel.findById(postId);
-    if (!post) throw new NotFoundException('Post topilmadi');
-    const index = post.likes.indexOf(userId as any);
 
-    if (index === -1) {
-      post.likes.push(userId as any);
-    } else {
-      post.likes.splice(index, 1);
-    }
-    return post.save();
+async toggleLike(postId: string, userId: string) { 
+  const post = await this.postModel.findById(postId);
+  if (!post) throw new NotFoundException('Post topilmadi');
+  const index = post.likes.findIndex(id => id.toString() === String(userId));
+
+  if (index === -1) {
+    post.likes.push(userId as any);
+  } else {
+    post.likes.splice(index, 1);
   }
+
+  const savedPost = await post.save();
+  return await savedPost.populate('author categories');
+}
 
   async findAll(page = 1, limit = 10, search?: string) {
     const filter: any = {};
