@@ -6,8 +6,6 @@ services:
       context: .
     container_name: devstories_api
     restart: always
-    depends_on:
-      - mongodb
     ports:
       - "3000:3000" 
     env_file:
