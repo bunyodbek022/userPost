@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: devstories_db
-    restart: always
-    ports:
-      - "${DB_PORT:-27017}:27017"
-    volumes:
-      - devstories_mongo_data:/data/db
-
   backend:
     build: 
       context: .
@@ -22,7 +13,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=mongodb://mongodb:27017/devstories
+      - DATABASE_URL=${DATABASE_URL}
       - PORT=3000
 
   frontend:
@@ -38,6 +29,3 @@ services:
       - "3001:3001" 
     env_file:
       - .env
-
-volumes:
-  devstories_mongo_data:
