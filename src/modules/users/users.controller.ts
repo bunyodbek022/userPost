@@ -12,7 +12,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiOperation,
@@ -20,7 +19,6 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { LoginUserDto } from './dto/login-user.dto';
 import type { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { RolesGuard } from 'src/guard/role.guard';
@@ -31,24 +29,7 @@ import { AuthUser } from 'src/common/interfaces/user.interface';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Post('register')
-  @ApiOperation({ summary: 'Yangi user register' })
-  @ApiResponse({
-    status: 201,
-    description: 'Foydalanuvchi muvaffaqiyatli yaratildi.',
-  })
-  @ApiResponse({ status: 409, description: 'Email yoki Username band.' })
-  register(@Body() payload: CreateUserDto) {
-    return this.usersService.register(payload);
-  }
-
-  @Post('login')
-  @ApiOperation({ summary: 'User login qilish' })
-  login(@Body() payload: LoginUserDto, @Res() res: Response) {
-    return this.usersService.login(payload, res);
-  }
+  constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Get('profile')

@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-
-@Schema({ timestamps: true }) 
+@Schema({ timestamps: true })
 export class Posts extends Document {
   @Prop({ required: true })
   title: string;
@@ -18,6 +17,9 @@ export class Posts extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Users' }] })
   likes: Types.ObjectId[];
+
+  @Prop({ type: String }) 
+  coverImage?: string;
 }
 
 export const PostsSchema = SchemaFactory.createForClass(Posts);
