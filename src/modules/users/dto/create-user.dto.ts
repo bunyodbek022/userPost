@@ -6,8 +6,11 @@ import {
 
   IsString,
   MinLength,
+  IsOptional,
 } from 'class-validator';
 
+
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'johndoe', description: 'Foydalanuvchi nomi' })
@@ -17,6 +20,7 @@ export class CreateUserDto {
 
   @ApiProperty({ example: 25, description: 'Foydalanuvchi yoshi' })
   @IsNumber()
+  @Type(() => Number)
   @IsNotEmpty()
   age: number;
 
@@ -28,4 +32,9 @@ export class CreateUserDto {
   @IsString()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({ required: false, description: 'User avatari' })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
 }

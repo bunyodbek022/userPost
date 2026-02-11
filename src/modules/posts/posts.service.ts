@@ -11,12 +11,14 @@ import { Model, Types } from 'mongoose';
 import { AuthUser } from 'src/common/interfaces/user.interface';
 import { UserRole } from 'src/common/enums/role.enum';
 import { Category } from '../category/schema/category.schema';
+import { Comment } from '../comments/schema/comment.schema';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Posts.name) private postModel: Model<Posts>,
     @InjectModel(Category.name) private categoryModel: Model<Category>,
+    @InjectModel(Comment.name) private commentModel: Model<Comment>,
   ) { }
   async create(payload: CreatePostDto, user: AuthUser) {
     const newPost = await this.postModel.create({
@@ -63,8 +65,48 @@ export class PostsService {
     };
   }
 
-  async findAll(page = 1, limit = 10, search?: string, category?: string, sort?: string) {
+  async toggleDislike(postId: string, userId: string) {
+    const post = await this.postModel.findById(postId);
+    if (!post) throw new NotFoundException('Post topilmadi');
+
+    // Remove from likes if present (mutual exclusion)
+    const likeIndex = post.likes.findIndex(
+      (id) => id.toString() === String(userId),
+    );
+    if (likeIndex !== -1) {
+      post.likes.splice(likeIndex, 1);
+    }
+
+    const index = post.dislikes.findIndex(
+      (id) => id.toString() === String(userId),
+    );
+
+    if (index === -1) {
+      post.dislikes.push(userId as any);
+    } else {
+      post.dislikes.splice(index, 1);
+    }
+
+    await post.save();
+
+    const updatedPost = await this.postModel
+      .findById(postId)
+      .populate('author', 'userName role')
+      .populate('categories')
+      .exec();
+
+    return {
+      success: true,
+      data: updatedPost,
+    };
+  }
+
+  async findAll(page = 1, limit = 10, search?: string, category?: string, author?: string, sort?: string) {
     const filter: any = {};
+
+    if (author) {
+      filter.author = new Types.ObjectId(author);
+    }
 
     if (search) {
       filter.title = { $regex: search, $options: 'i' };
@@ -118,11 +160,13 @@ export class PostsService {
           { $skip: skip },
           { $limit: limit },
           { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
-          { $unwind: '$author' }, // author is object
+          { $unwind: '$author' },
           { $lookup: { from: 'categories', localField: 'categories', foreignField: '_id', as: 'categories' } },
+          { $lookup: { from: 'comments', localField: '_id', foreignField: 'post', as: '_comments' } },
+          { $addFields: { commentCount: { $size: '$_comments' } } },
           {
             $project: {
-              title: 1, content: 1, coverImage: 1, createdAt: 1, likes: 1,
+              title: 1, content: 1, coverImage: 1, createdAt: 1, likes: 1, dislikes: 1, commentCount: 1,
               "author.userName": 1, "author.role": 1, "author._id": 1, "author.avatar": 1,
               "categories.name": 1, "categories._id": 1
             }
@@ -139,14 +183,24 @@ export class PostsService {
 
 
     const [items, total] = await Promise.all([
-      this.postModel
-        .find(filter)
-        .populate('author', 'userName role avatar') // Added avatar to selection
-        .populate('categories')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
+      this.postModel.aggregate([
+        { $match: filter },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
+        { $unwind: '$author' },
+        { $lookup: { from: 'categories', localField: 'categories', foreignField: '_id', as: 'categories' } },
+        { $lookup: { from: 'comments', localField: '_id', foreignField: 'post', as: '_comments' } },
+        { $addFields: { commentCount: { $size: '$_comments' } } },
+        {
+          $project: {
+            title: 1, content: 1, coverImage: 1, createdAt: 1, likes: 1, dislikes: 1, commentCount: 1,
+            'author.userName': 1, 'author.role': 1, 'author._id': 1, 'author.avatar': 1,
+            'categories.name': 1, 'categories._id': 1
+          }
+        }
+      ]),
       this.postModel.countDocuments(filter),
     ]);
 
@@ -194,9 +248,11 @@ export class PostsService {
 
     if (!post) throw new NotFoundException('Post topilmadi');
 
+    const commentCount = await this.commentModel.countDocuments({ post: new Types.ObjectId(id) });
+
     return {
       success: true,
-      data: post,
+      data: { ...post.toObject(), commentCount },
     };
   }
 

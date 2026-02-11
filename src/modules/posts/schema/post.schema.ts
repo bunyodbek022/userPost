@@ -18,7 +18,10 @@ export class Posts extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Users' }] })
   likes: Types.ObjectId[];
 
-  @Prop({ type: String }) 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Users' }] })
+  dislikes: Types.ObjectId[];
+
+  @Prop({ type: String })
   coverImage?: string;
 }
 

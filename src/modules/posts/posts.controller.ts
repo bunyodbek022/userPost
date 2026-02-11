@@ -85,6 +85,15 @@ export class PostsController {
     return this.postsService.toggleLike(id, userId);
   }
 
+  @ApiSecurity('cookie-auth-key')
+  @Post(':id/dislike')
+  @ApiOperation({ summary: 'Postga dislike bosish yoki qaytarib olish' })
+  @UseGuards(AuthGuard)
+  async toggleDislike(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id || req.user._id;
+    return this.postsService.toggleDislike(id, userId);
+  }
+
   @Get()
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
@@ -93,6 +102,7 @@ export class PostsController {
     @Query('limit') limit = '10',
     @Query('search') search?: string,
     @Query('category') category?: string,
+    @Query('author') author?: string,
     @Query('sort') sort?: string,
   ) {
     return this.postsService.findAll(
@@ -100,6 +110,7 @@ export class PostsController {
       Number(limit),
       search,
       category,
+      author,
       sort,
     );
   }

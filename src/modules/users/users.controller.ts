@@ -10,7 +10,12 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -61,9 +66,36 @@ export class UsersController {
   @UseGuards(AuthGuard, RolesGuard)
   @Patch(':id')
   @ApiSecurity('cookie-auth-key')
-  @ApiOperation({ summary: 'Userni  yangilash' })
-  update(@Param('id') id: string, @Body() payload: UpdateUserDto, @Req() req) {
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './uploads/avatars',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+          return cb(new Error('Faqat rasm fayllari qabul qilinadi!'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    }),
+  )
+  @ApiOperation({ summary: 'Userni yangilash' })
+  update(
+    @Param('id') id: string,
+    @Body() payload: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req
+  ) {
     const user: AuthUser = req.user as AuthUser;
+    if (file) {
+      payload.avatar = `/uploads/avatars/${file.filename}`;
+    }
     return this.usersService.update(id, payload, user);
   }
 
