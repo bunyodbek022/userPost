@@ -12,6 +12,8 @@ import {
   ForbiddenException,
   UseInterceptors,
   UploadedFile,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -106,6 +108,34 @@ export class UsersController {
   remove(@Param('id') id: string, @Req() req) {
     const user: AuthUser = req.user as AuthUser;
     return this.usersService.removeUser(id, user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':id/follow')
+  @HttpCode(HttpStatus.OK)
+  @ApiSecurity('cookie-auth-key')
+  @ApiOperation({ summary: 'Userni follow qilish' })
+  follow(@Param('id') id: string, @Req() req) {
+    const user: AuthUser = req.user as AuthUser;
+    return this.usersService.followUser(id, user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete(':id/follow')
+  @ApiSecurity('cookie-auth-key')
+  @ApiOperation({ summary: 'Userni unfollow qilish' })
+  unfollow(@Param('id') id: string, @Req() req) {
+    const user: AuthUser = req.user as AuthUser;
+    return this.usersService.unfollowUser(id, user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':id/follow-status')
+  @ApiSecurity('cookie-auth-key')
+  @ApiOperation({ summary: 'Follow statusni tekshirish' })
+  followStatus(@Param('id') id: string, @Req() req) {
+    const user: AuthUser = req.user as AuthUser;
+    return this.usersService.getFollowStatus(id, user);
   }
 
   @UseGuards(AuthGuard)

@@ -24,7 +24,25 @@ export class CreatePostDto {
     type: [String],
   })
   @IsArray()
-  @ArrayNotEmpty()           
-  @IsMongoId({ each: true }) 
+  @ArrayNotEmpty()
+  @IsMongoId({ each: true })
   categories: string[];
+
+  @ApiProperty({
+    example: ['history', 'biography'],
+    description: 'Post teglari',
+    required: false,
+  })
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @ApiProperty({
+    example: 'PUBLISHED',
+    description: 'Post holati (DRAFT, PUBLISHED, ARCHIVED)',
+    required: false,
+    enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'],
+  })
+  @IsString()
+  status?: string;
 }

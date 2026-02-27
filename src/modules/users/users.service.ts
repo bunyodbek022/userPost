@@ -194,4 +194,48 @@ export class UsersService {
       });
     }
   }
+
+  async followUser(targetId: string, currentUser: AuthUser) {
+    const currentId = String(currentUser.id);
+    if (targetId === currentId) {
+      throw new BadRequestException("O'zingizni follow qila olmaysiz");
+    }
+    const target = await this.userModel.findById(targetId);
+    if (!target) throw new NotFoundException('User topilmadi');
+
+    // Add currentUser to target's followers, and target to currentUser's following
+    await this.userModel.findByIdAndUpdate(targetId, {
+      $addToSet: { followers: currentId },
+    });
+    await this.userModel.findByIdAndUpdate(currentId, {
+      $addToSet: { following: targetId },
+    });
+
+    return { success: true, message: 'Follow qilindi' };
+  }
+
+  async unfollowUser(targetId: string, currentUser: AuthUser) {
+    const currentId = String(currentUser.id);
+    await this.userModel.findByIdAndUpdate(targetId, {
+      $pull: { followers: currentId },
+    });
+    await this.userModel.findByIdAndUpdate(currentId, {
+      $pull: { following: targetId },
+    });
+    return { success: true, message: 'Unfollow qilindi' };
+  }
+
+  async getFollowStatus(targetId: string, currentUser: AuthUser) {
+    const currentId = String(currentUser.id);
+    const target = await this.userModel.findById(targetId).select('followers following').lean();
+    if (!target) throw new NotFoundException('User topilmadi');
+
+    const isFollowing = (target.followers || []).some(
+      (id: any) => String(id) === currentId,
+    );
+    return {
+      success: true,
+      data: { isFollowing, followerCount: (target.followers || []).length },
+    };
+  }
 }

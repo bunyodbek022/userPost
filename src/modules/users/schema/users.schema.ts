@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { UserRole } from 'src/common/enums/role.enum';
 
 @Schema({ timestamps: true })
@@ -25,6 +25,12 @@ export class Users extends Document {
 
   @Prop({ required: false })
   avatar: string;
+
+  @Prop({ type: [Types.ObjectId], ref: 'Users', default: [] })
+  followers: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'Users', default: [] })
+  following: Types.ObjectId[];
 
 }
 

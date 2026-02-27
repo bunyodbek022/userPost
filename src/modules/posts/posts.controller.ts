@@ -61,6 +61,8 @@ export class PostsController {
   create(@Body('title') title: string,
     @Body('content') content: string,
     @Body('categories', new ParseArrayPipe({ items: String, separator: ',' })) categories: string[],
+    @Body('tags', new ParseArrayPipe({ items: String, separator: ',', optional: true })) tags: string[],
+    @Body('status') status: string,
     @UploadedFile() file: Express.Multer.File, @Req() req) {
     const user: AuthUser = req.user;
     let coverImagePath: string | undefined;
@@ -71,6 +73,8 @@ export class PostsController {
       title,
       content,
       categories,
+      tags,
+      status,
       coverImage: coverImagePath,
     };
     return this.postsService.create(payloadWithImage, user);
@@ -94,6 +98,15 @@ export class PostsController {
     return this.postsService.toggleDislike(id, userId);
   }
 
+  @ApiSecurity('cookie-auth-key')
+  @Post(':id/repost')
+  @ApiOperation({ summary: 'Postga repost bosish yoki qaytarib olish' })
+  @UseGuards(AuthGuard)
+  async toggleRepost(@Param('id') id: string, @Req() req) {
+    const userId = req.user.id || req.user._id;
+    return this.postsService.toggleRepost(id, userId);
+  }
+
   @Get()
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
@@ -102,6 +115,7 @@ export class PostsController {
     @Query('limit') limit = '10',
     @Query('search') search?: string,
     @Query('category') category?: string,
+    @Query('status') status?: string,
     @Query('author') author?: string,
     @Query('sort') sort?: string,
   ) {
@@ -112,6 +126,7 @@ export class PostsController {
       category,
       author,
       sort,
+      status, // Pass status to service
     );
   }
 

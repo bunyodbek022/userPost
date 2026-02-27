@@ -23,6 +23,21 @@ export class Posts extends Document {
 
   @Prop({ type: String })
   coverImage?: string;
+
+  @Prop({ unique: true })
+  slug: string;
+
+  @Prop({ default: 'PUBLISHED', enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] })
+  status: string;
+
+  @Prop({ default: 0 })
+  views: number;
+
+  @Prop({ type: [String] })
+  tags: string[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Users' }] })
+  reposts: Types.ObjectId[];
 }
 
 export const PostsSchema = SchemaFactory.createForClass(Posts);

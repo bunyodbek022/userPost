@@ -21,8 +21,10 @@ export class PostsService {
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
   ) { }
   async create(payload: CreatePostDto, user: AuthUser) {
+    const slug = this.generateSlug(payload.title);
     const newPost = await this.postModel.create({
       ...payload,
+      slug,
       author: new Types.ObjectId(user.id),
       categories: payload.categories.map((id) => new Types.ObjectId(id)),
     });
@@ -35,6 +37,16 @@ export class PostsService {
       success: true,
       data: populatedPost || newPost,
     };
+  }
+
+  private generateSlug(title: string): string {
+    return title
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
   }
 
   async toggleLike(postId: string, userId: string) {
@@ -101,7 +113,36 @@ export class PostsService {
     };
   }
 
-  async findAll(page = 1, limit = 10, search?: string, category?: string, author?: string, sort?: string) {
+  async toggleRepost(postId: string, userId: string) {
+    const post = await this.postModel.findById(postId);
+    if (!post) throw new NotFoundException('Post topilmadi');
+
+    const index = post.reposts?.findIndex(
+      (id) => id.toString() === String(userId),
+    ) ?? -1;
+
+    if (index === -1) {
+      if (!post.reposts) post.reposts = [];
+      post.reposts.push(userId as any);
+    } else {
+      post.reposts.splice(index, 1);
+    }
+
+    await post.save();
+
+    const updatedPost = await this.postModel
+      .findById(postId)
+      .populate('author', 'userName role')
+      .populate('categories')
+      .exec();
+
+    return {
+      success: true,
+      data: updatedPost,
+    };
+  }
+
+  async findAll(page = 1, limit = 10, search?: string, category?: string, author?: string, sort?: string, status?: string) {
     const filter: any = {};
 
     if (author) {
@@ -110,6 +151,15 @@ export class PostsService {
 
     if (search) {
       filter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Default to published, unless specifically requested otherwise (e.g. for admin dashboard)
+    // For public findAll, let's enforce status=PUBLISHED if not specified.
+    // Use $in to also match legacy posts that don't have a status field (null/missing).
+    if (!status && !filter.status) {
+      filter.status = { $in: ['PUBLISHED', null] };
+    } else if (status) {
+      filter.status = status;
     }
 
     if (category && category !== 'All' && category !== 'undefined') {
@@ -167,6 +217,7 @@ export class PostsService {
           {
             $project: {
               title: 1, content: 1, coverImage: 1, createdAt: 1, likes: 1, dislikes: 1, commentCount: 1,
+              slug: 1, status: 1, views: 1, tags: 1, // Added fields
               "author.userName": 1, "author.role": 1, "author._id": 1, "author.avatar": 1,
               "categories.name": 1, "categories._id": 1
             }
@@ -196,6 +247,7 @@ export class PostsService {
         {
           $project: {
             title: 1, content: 1, coverImage: 1, createdAt: 1, likes: 1, dislikes: 1, commentCount: 1,
+            slug: 1, status: 1, views: 1, tags: 1, // Added fields
             'author.userName': 1, 'author.role': 1, 'author._id': 1, 'author.avatar': 1,
             'categories.name': 1, 'categories._id': 1
           }
@@ -241,7 +293,7 @@ export class PostsService {
 
   async findOne(id: string) {
     const post = await this.postModel
-      .findById(id)
+      .findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true })
       .populate('author', 'userName role')
       .populate('categories')
       .exec();
